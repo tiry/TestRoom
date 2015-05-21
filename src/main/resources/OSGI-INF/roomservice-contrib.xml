@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.room.RoomMonkeyComponent">
+
+  <service>
+    <provide interface="org.nuxeo.room.RoomMonkey" />
+  </service>
+
+  <implementation class="org.nuxeo.room.RoomMonkeyComponent" />
+
+ <provide></provide>
+</component>
