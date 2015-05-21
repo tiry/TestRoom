@@ -103,3 +103,6 @@ Output is text :
     Exec time :3695 ms
     Throughput :1458.7280108254397 object/s
 
+## Dependencies
+
+This module uses `Nuxeo-platform-importer` to generate the random room tree.
