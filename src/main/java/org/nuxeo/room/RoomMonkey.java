@@ -17,6 +17,8 @@ public interface RoomMonkey {
 
     DocumentModel reindexRoom(String name, CoreSession session) throws Exception;
 
-    File exportRoom(String name, CoreSession session) throws Exception ;
+    File exportRoom(String name, CoreSession session) throws Exception;
+
+    String exportRoomStructure(String name, CoreSession session) throws Exception;
 
 }

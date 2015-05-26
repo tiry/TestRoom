@@ -89,6 +89,12 @@ Output is text :
     Exec time :6944 ms
 
 
+### Export room structure
+
+Run XML export of the room full tree (meta-data only) and return an XML stream
+
+    GET http://127.0.0.1:8080/nuxeo/site/rooms/exportStructure/{roomName}
+
 ### Move Room
 
 Create a new room and move the old one under it : this wait the while hierarchy has to be updated.
@@ -106,3 +112,54 @@ Output is text :
 ## Dependencies
 
 This module uses `Nuxeo-platform-importer` to generate the random room tree.
+
+## About REST API
+
+The standard Nuxeo Rest API can be used to manipulate content :
+
+
+     GET http://127.0.0.1:8080/nuxeo/api/v1/id/d75cae39-4a14-43e2-b88a-597c21ba2988
+
+     GET http://127.0.0.1:8080/nuxeo/api/v1/path/youpla
+
+This module also contribute a Content Enricher so that when retrieveing a room, you can also retrieve the full room structure :
+
+
+     GET http://127.0.0.1:8080/nuxeo/api/v1/path/youpla
+     X-NXenrichers.document roomStructure
+
+
+     {
+      "entity-type": "document",
+      "repository": "default",
+      "uid": "d75cae39-4a14-43e2-b88a-597c21ba2988",
+      "path": "/youpla",
+      "type": "Workspace",
+      "state": "project",
+      "parentRef": "4972d5ea-fdf3-4f41-bcf4-fabec54faa11",
+      "isCheckedOut": true,
+      "changeToken": "1431965649708",
+      "title": "yop",
+      "lastModified": "2015-05-18T16:14:09.70Z",
+      "facets": [
+        "Folderish",
+        "SuperSpace"
+      ],
+      "contextParameters": {
+        "roomStructure": {
+            "size": "5381",
+            "children": [
+                {
+                    "uid": "aee86940-7722-4e0c-8304-f4f857ae344f",
+                    "name": "file-0-0",
+                    "type": "File"
+                },
+                ...
+            ],
+            "execTime" : "497ms 
+        }
+      }
+     }
+
+
+

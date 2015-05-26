@@ -243,6 +243,30 @@ public class Api extends ModuleRoot {
         return res.toString();
     }
 
+
+    @GET
+    @Path("exportStructure/{name}")
+    @Produces("text/plain")
+    public String exportStructure(@PathParam(value = "name") String name) throws Exception {
+        return doExportStructure(name);
+    }
+
+
+    @POST
+    @Path("exportStructure/{name}")
+    @Produces("text/plain")
+    public String doExportStructure(@PathParam(value = "name") String name) throws Exception {
+
+        Result res = new Result();
+
+        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        String xml = rm.exportRoomStructure(name, WebEngine.getActiveContext().getCoreSession());
+
+        res.message = xml;
+
+        return res.toString();
+    }
+
     @Path("browse")
     public Object getRepository() {
         return new DocumentRoot(WebEngine.getActiveContext(), "/");

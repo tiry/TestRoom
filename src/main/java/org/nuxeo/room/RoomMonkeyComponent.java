@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.core.api.CoreSession;
@@ -19,6 +20,7 @@ import org.nuxeo.ecm.core.io.DocumentWriter;
 import org.nuxeo.ecm.core.io.impl.DocumentPipeImpl;
 import org.nuxeo.ecm.core.io.impl.plugins.DocumentTreeReader;
 import org.nuxeo.ecm.core.io.impl.plugins.NuxeoArchiveWriter;
+import org.nuxeo.ecm.core.io.impl.plugins.XMLDocumentTreeWriter;
 import org.nuxeo.ecm.core.work.api.Work;
 import org.nuxeo.ecm.core.work.api.WorkManager;
 import org.nuxeo.ecm.platform.importer.base.GenericMultiThreadedImporter;
@@ -163,5 +165,33 @@ public class RoomMonkeyComponent extends DefaultComponent implements RoomMonkey 
 
         return archive;
     }
+
+
+    public String exportRoomStructure(String name, CoreSession session) throws Exception {
+
+        PathRef roomRef = new PathRef("/" + name);
+        DocumentModel room = session.getDocument(roomRef);
+
+        File xml = File.createTempFile("room-io-tree", "xml");
+
+        DocumentReader reader = new DocumentTreeReader(session, room);
+        DocumentWriter writer = new XMLDocumentTreeWriter(xml);
+
+        DocumentPipe pipe = new DocumentPipeImpl(10);
+        pipe.setReader(reader);
+        pipe.setWriter(writer);
+        pipe.run();
+
+
+        try {
+            return FileUtils.readFileToString(xml);
+        } finally {
+            xml.delete();
+        }
+    }
+
+
+
+
 
 }

@@ -6,5 +6,6 @@ Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
 Bundle-ManifestVersion: 2
 Bundle-Vendor: Nuxeo
-Nuxeo-Component: OSGI-INF/roomservice-contrib.xml
+Nuxeo-Component: OSGI-INF/roomservice-contrib.xml, 
+ OSGI-INF/marshallers-contrib.xml
 
