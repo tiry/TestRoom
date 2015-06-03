@@ -163,7 +163,7 @@ This module also contribute a Content Enricher so that when retrieveing a room, 
       }
      }
 
-The associated class is [RoomTreeEnricher.java](/blob/master/src/main/java/org/nuxeo/room/apiextension/RoomTreeEnricher.java).
+The associated class is [RoomTreeEnricher.java](/src/main/java/org/nuxeo/room/apiextension/RoomTreeEnricher.java).
 
 ### new Operation 
 
@@ -171,7 +171,7 @@ This modules contributes a new `Room.Export` Operation:
 
 Automatically generated documentation is available at : /nuxeo/site/automation/doc?id=Room.Export
 
-The associated class is [RoomOperation.java](/blob/master/src/main/java/org/nuxeo/room/apiextension/RoomOperation.java).
+The associated class is [RoomOperation.java](/src/main/java/org/nuxeo/room/apiextension/RoomOperation.java).
 
 You can combine this operation with the REST API :
 
@@ -182,7 +182,7 @@ You can combine this operation with the REST API :
 
 ### new Business Adapter
 
-This modules contribute a (pretty dummy) Document Adapter called [Room](/blob/master/src/main/java/org/nuxeo/room/adapter/Room.java).
+This modules contribute a (pretty dummy) Document Adapter called [Room](/src/main/java/org/nuxeo/room/adapter/Room.java).
 
 This adapter could be used via the REST API :
 
