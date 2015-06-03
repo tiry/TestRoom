@@ -38,9 +38,9 @@ import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
-public class RoomMonkeyComponent extends DefaultComponent implements RoomMonkey {
+public class RoomServiceComponent extends DefaultComponent implements RoomService {
 
-    protected static final Log log = LogFactory.getLog(RoomMonkeyComponent.class);
+    protected static final Log log = LogFactory.getLog(RoomServiceComponent.class);
 
     protected static ImporterLogger inporterLogger;
 

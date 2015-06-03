@@ -5,7 +5,7 @@ import java.io.File;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 
-public interface RoomMonkey {
+public interface RoomService {
 
     DocumentModel createRoom(String name, int branchingFactor, int maxItems, CoreSession session);
 

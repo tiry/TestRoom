@@ -1,4 +1,4 @@
-package org.nuxeo.room.jaxrs;
+package org.nuxeo.room.apiextension;
 
 import static org.nuxeo.ecm.core.io.registry.reflect.Instantiations.SINGLETON;
 import static org.nuxeo.ecm.core.io.registry.reflect.Priorities.REFERENCE;

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.room.marshallers" version="1.0.0">
+
+  <extension target="org.nuxeo.ecm.core.io.MarshallerRegistry" point="marshallers">
+    <documentation>contibute enrichers</documentation>
+    <register class="org.nuxeo.room.apiextension.RoomTreeEnricher" enable="true" />
+  </extension>
+
+ <extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent" point="operations">
+    <documentation>Contribute operation</documentation>
+    <operation
+      class="org.nuxeo.room.apiextension.RoomOperation" />
+  </extension>
+
+</component>

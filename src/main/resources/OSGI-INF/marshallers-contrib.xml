@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<component name="org.nuxeo.room..marshallers" version="1.0.0">
-  <extension target="org.nuxeo.ecm.core.io.MarshallerRegistry" point="marshallers">
-    <!-- enrichers -->
-    <register class="org.nuxeo.room.jaxrs.RoomTreeEnricher" enable="true" />
-  </extension>
-</component>

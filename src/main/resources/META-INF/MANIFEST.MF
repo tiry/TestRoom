@@ -1,11 +1,12 @@
 Manifest-Version: 1.0
-Bundle-SymbolicName: org.nuxeo.uidgen.faster
-Nuxeo-WebModule: org.nuxeo.room.jaxrs.ApiModule;name=room;extends=admin
-Bundle-Name: org.nuxeo.uidgen.faster
+Bundle-SymbolicName: org.nuxeo.room.sample
+Nuxeo-WebModule: org.nuxeo.room.jaxrs.ApiModule;name=room;extends=admin;package=org/nuxeo/room
+Bundle-Name: org.nuxeo.room.sample
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
 Bundle-ManifestVersion: 2
 Bundle-Vendor: Nuxeo
 Nuxeo-Component: OSGI-INF/roomservice-contrib.xml, 
- OSGI-INF/marshallers-contrib.xml
+ OSGI-INF/api-contrib.xml,
+ OSGI-INF/room-adapters-contrib.xml
 

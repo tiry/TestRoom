@@ -14,7 +14,7 @@ import org.nuxeo.ecm.core.rest.DocumentRoot;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
-import org.nuxeo.room.RoomMonkey;
+import org.nuxeo.room.RoomService;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
@@ -88,7 +88,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         DocumentModel room = rm.createRoom(name, branchingFactor, maxItems,
                 WebEngine.getActiveContext().getCoreSession());
 
@@ -113,7 +113,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         DocumentModel room = rm.renameRoom(oldName, newName, WebEngine.getActiveContext().getCoreSession());
 
         res.message = "Room " + oldName + " renamed to " + room.getName();
@@ -143,7 +143,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         DocumentModel room = rm.moveRoom(oldName, newName, WebEngine.getActiveContext().getCoreSession());
 
         res.message = "Room " + oldName + " moved to " + room.getName();
@@ -171,7 +171,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         DocumentModel room = rm.reindexRoom(name, WebEngine.getActiveContext().getCoreSession());
 
         res.message = "Room " + room.getName() + " reindexed";
@@ -204,7 +204,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         DocumentModel room = rm.updateRoomACL(name, principal, permission,
                 WebEngine.getActiveContext().getCoreSession());
 
@@ -235,7 +235,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         File zip = rm.exportRoom(name, WebEngine.getActiveContext().getCoreSession());
 
         res.message = "Room " + name + " exported as " + zip.getAbsolutePath() + (zip.length()/1024) + "KB";
@@ -259,7 +259,7 @@ public class Api extends ModuleRoot {
 
         Result res = new Result();
 
-        RoomMonkey rm = Framework.getService(RoomMonkey.class);
+        RoomService rm = Framework.getService(RoomService.class);
         String xml = rm.exportRoomStructure(name, WebEngine.getActiveContext().getCoreSession());
 
         res.message = xml;
