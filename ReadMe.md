@@ -12,7 +12,9 @@ This is just a WebEngine Module that exposed a REST endpoint for :
  - change acl on the room
  - export the room
 
-## API
+This modules also gives some examples on how to extend the REST API and Automation.
+
+## Custom API
 
 The exposed API is very simple :
 
@@ -113,17 +115,17 @@ Output is text :
 
 This module uses `Nuxeo-platform-importer` to generate the random room tree.
 
-## About REST API
+## Using and Extending REST API
 
 The standard Nuxeo Rest API can be used to manipulate content :
-
 
      GET http://127.0.0.1:8080/nuxeo/api/v1/id/d75cae39-4a14-43e2-b88a-597c21ba2988
 
      GET http://127.0.0.1:8080/nuxeo/api/v1/path/youpla
 
-This module also contribute a Content Enricher so that when retrieveing a room, you can also retrieve the full room structure :
+### Retrieving extract data
 
+This module also contribute a Content Enricher so that when retrieveing a room, you can also retrieve the full room structure :
 
      GET http://127.0.0.1:8080/nuxeo/api/v1/path/youpla
      X-NXenrichers.document roomStructure
@@ -161,5 +163,29 @@ This module also contribute a Content Enricher so that when retrieveing a room, 
       }
      }
 
+The associated class is [RoomTreeEnricher.java](/blob/master/src/main/java/org/nuxeo/room/apiextension/RoomTreeEnricher.java).
+
+### new Operation 
+
+This modules contributes a new `Room.Export` Operation:
+
+Automatically generated documentation is available at : /nuxeo/site/automation/doc?id=Room.Export
+
+The associated class is [RoomOperation.java](/blob/master/src/main/java/org/nuxeo/room/apiextension/RoomOperation.java).
+
+You can combine this operation with the REST API :
+
+    POST http://127.0.0.1:8080/nuxeo/api/v1/path/yopy/@op/Room.Export
+    Content-Type application/json+nxrequest
+
+    {}
+
+### new Business Adapter
+
+This modules contribute a (pretty dummy) Document Adapter called [Room](/blob/master/src/main/java/org/nuxeo/room/adapter/Room.java).
+
+This adapter could be used via the REST API :
+
+    GET http://127.0.0.1:8080/nuxeo/api/v1/path/yopy/@bo/Room
 
 
