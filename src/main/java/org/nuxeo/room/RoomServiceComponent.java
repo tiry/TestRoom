@@ -3,6 +3,7 @@ package org.nuxeo.room;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -21,8 +22,6 @@ import org.nuxeo.ecm.core.io.impl.DocumentPipeImpl;
 import org.nuxeo.ecm.core.io.impl.plugins.DocumentTreeReader;
 import org.nuxeo.ecm.core.io.impl.plugins.NuxeoArchiveWriter;
 import org.nuxeo.ecm.core.io.impl.plugins.XMLDocumentTreeWriter;
-import org.nuxeo.ecm.core.work.api.Work;
-import org.nuxeo.ecm.core.work.api.WorkManager;
 import org.nuxeo.ecm.platform.importer.base.GenericMultiThreadedImporter;
 import org.nuxeo.ecm.platform.importer.base.ImporterRunnerConfiguration;
 import org.nuxeo.ecm.platform.importer.filter.EventServiceConfiguratorFilter;
@@ -31,9 +30,9 @@ import org.nuxeo.ecm.platform.importer.log.BufferredLogger;
 import org.nuxeo.ecm.platform.importer.log.ImporterLogger;
 import org.nuxeo.ecm.platform.importer.source.RandomTextSourceNode;
 import org.nuxeo.ecm.platform.importer.source.SourceNode;
+import org.nuxeo.elasticsearch.api.ElasticSearchAdmin;
+import org.nuxeo.elasticsearch.api.ElasticSearchIndexing;
 import org.nuxeo.elasticsearch.commands.IndexingCommand;
-import org.nuxeo.elasticsearch.core.IndexingMonitor;
-import org.nuxeo.elasticsearch.work.IndexingWorker;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.nuxeo.runtime.transaction.TransactionHelper;
@@ -81,7 +80,7 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
         Thread importer = new Thread(runner);
         importer.run();
 
-        room.setPropertyValue("dc:description", ""+GenericMultiThreadedImporter.getCreatedDocsCounter());
+        room.setPropertyValue("dc:description", "" + GenericMultiThreadedImporter.getCreatedDocsCounter());
         return session.saveDocument(room);
     }
 
@@ -93,11 +92,9 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
         newRoom = session.createDocument(newRoom);
         session.save();
 
-
         PathRef roomRef = new PathRef("/" + oldName);
         return session.move(roomRef, newRoom.getRef(), newname);
     }
-
 
     @Override
     public DocumentModel renameRoom(String oldName, String newname, CoreSession session) {
@@ -131,17 +128,14 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
         List<IndexingCommand> cmds = new ArrayList<IndexingCommand>();
         cmds.add(cmd);
 
-        IndexingMonitor indexingMonitor = new IndexingMonitor();
-        WorkManager wm = Framework.getService(WorkManager.class);
-        IndexingWorker idxWork = new IndexingWorker(indexingMonitor, session.getRepositoryName(), cmds);
-        wm.schedule(idxWork, false);
+        ElasticSearchIndexing esi = Framework.getService(ElasticSearchIndexing.class);
 
-        String wid = idxWork.getId();
+        esi.runIndexingWorker(cmds);
 
-        indexingMonitor.waitForWorkerToComplete();
-        while (!wm.getWorkState(wid).equals(Work.State.COMPLETED)) {
-            Thread.sleep(200);
-        }
+        ElasticSearchAdmin esa = Framework.getService(ElasticSearchAdmin.class);
+
+        esa.prepareWaitForIndexing().get(30, TimeUnit.SECONDS); // wait for indexing
+        esa.refresh(); // explicit refresh
 
         return room;
     }
@@ -162,11 +156,15 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
         pipe.setWriter(writer);
         pipe.run();
 
-
         return archive;
     }
 
+    public DocumentModel getRoom(String name, CoreSession session) {
+        PathRef roomRef = new PathRef("/" + name);
+        return session.getDocument(roomRef);
+    }
 
+    @Override
     public String exportRoomStructure(String name, CoreSession session) throws Exception {
 
         PathRef roomRef = new PathRef("/" + name);
@@ -182,16 +180,11 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
         pipe.setWriter(writer);
         pipe.run();
 
-
         try {
             return FileUtils.readFileToString(xml);
         } finally {
             xml.delete();
         }
     }
-
-
-
-
 
 }

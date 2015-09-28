@@ -21,4 +21,5 @@ public interface RoomService {
 
     String exportRoomStructure(String name, CoreSession session) throws Exception;
 
+    DocumentModel getRoom(String name, CoreSession session);
 }

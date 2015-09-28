@@ -64,7 +64,6 @@ public class Api extends ModuleRoot {
         return Integer.parseInt(room.getPropertyValue("dc:description").toString());
     }
 
-
     @Path("new/{name}")
     @GET
     @Produces("text/plain")
@@ -105,7 +104,6 @@ public class Api extends ModuleRoot {
         return doRename(oldName, newName);
     }
 
-
     @Path("rename/{oldName}/{newName}")
     @POST
     @Produces("text/plain")
@@ -126,8 +124,6 @@ public class Api extends ModuleRoot {
 
         return res.toString();
     }
-
-
 
     @Path("move/{oldName}/{newName}")
     @GET
@@ -219,14 +215,12 @@ public class Api extends ModuleRoot {
         return res.toString();
     }
 
-
     @GET
     @Path("export/{name}")
     @Produces("text/plain")
     public String export(@PathParam(value = "name") String name) throws Exception {
         return doExport(name);
     }
-
 
     @POST
     @Path("export/{name}")
@@ -238,11 +232,10 @@ public class Api extends ModuleRoot {
         RoomService rm = Framework.getService(RoomService.class);
         File zip = rm.exportRoom(name, WebEngine.getActiveContext().getCoreSession());
 
-        res.message = "Room " + name + " exported as " + zip.getAbsolutePath() + (zip.length()/1024) + "KB";
+        res.message = "Room " + name + " exported as " + zip.getAbsolutePath() + (zip.length() / 1024) + "KB";
 
         return res.toString();
     }
-
 
     @GET
     @Path("exportStructure/{name}")
@@ -250,7 +243,6 @@ public class Api extends ModuleRoot {
     public String exportStructure(@PathParam(value = "name") String name) throws Exception {
         return doExportStructure(name);
     }
-
 
     @POST
     @Path("exportStructure/{name}")
@@ -272,4 +264,16 @@ public class Api extends ModuleRoot {
         return new DocumentRoot(WebEngine.getActiveContext(), "/");
     }
 
+    @Path("render/{name}")
+    @GET
+    @Produces("text/html")
+    public Object doRender(@PathParam(value = "name") String name) throws Exception {
+        RoomService rm = Framework.getService(RoomService.class);
+        DocumentModel room = rm.getRoom(name, WebEngine.getActiveContext().getCoreSession());
+        return getView("index").arg("room", room).arg("session", WebEngine.getActiveContext().getCoreSession()).arg("t0", System.currentTimeMillis());
+    }
+
+    public long getTimeDiff(long t0) {
+        return System.currentTimeMillis()-t0;
+    }
 }
