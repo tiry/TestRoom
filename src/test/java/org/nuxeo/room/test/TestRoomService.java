@@ -36,9 +36,15 @@ public class TestRoomService {
     }
 
     @Test
-    public void shouldCreateRoom() {
-        DocumentModel room = rs.createRoom("toto", 1, 100, session);
+    public void shouldCreateRoom() throws Exception {
+        DocumentModel room = rs.createRoom("toto", 1, 100, 20, session);
         Assert.assertNotNull(room);
+
+        rs.randomUpdates("toto", session, 1, 20);
+
+        rs.randomReadAndUpdates("toto", session, 1, 1, 10);
     }
+
+
 }
 

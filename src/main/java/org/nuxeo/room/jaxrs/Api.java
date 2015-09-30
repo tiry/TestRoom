@@ -1,6 +1,7 @@
 package org.nuxeo.room.jaxrs;
 
 import java.io.File;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -10,6 +11,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.event.EventServiceAdmin;
+import org.nuxeo.ecm.core.event.impl.EventListenerDescriptor;
+import org.nuxeo.ecm.core.event.impl.EventListenerList;
 import org.nuxeo.ecm.core.rest.DocumentRoot;
 import org.nuxeo.ecm.webengine.WebEngine;
 import org.nuxeo.ecm.webengine.model.WebObject;
@@ -68,15 +72,15 @@ public class Api extends ModuleRoot {
     @GET
     @Produces("text/plain")
     public String create(@PathParam(value = "name") String name, @QueryParam("branches") Integer branchingFactor,
-            @QueryParam("max") Integer maxItems) {
-        return doCreate(name, branchingFactor, maxItems);
+            @QueryParam("max") Integer maxItems, @QueryParam("batchSize") Integer batchSize) {
+        return doCreate(name, branchingFactor, maxItems, batchSize);
     }
 
     @Path("new/{name}")
     @POST
     @Produces("text/plain")
     public String doCreate(@PathParam(value = "name") String name, @QueryParam("branches") Integer branchingFactor,
-            @QueryParam("max") Integer maxItems) {
+            @QueryParam("max") Integer maxItems, @QueryParam("batchSize") Integer batchSize) {
 
         if (branchingFactor == null) {
             branchingFactor = 5;
@@ -85,10 +89,14 @@ public class Api extends ModuleRoot {
             maxItems = 5000;
         }
 
+        if (batchSize == null) {
+            batchSize = 20;
+        }
+
         Result res = new Result();
 
         RoomService rm = Framework.getService(RoomService.class);
-        DocumentModel room = rm.createRoom(name, branchingFactor, maxItems,
+        DocumentModel room = rm.createRoom(name, branchingFactor, maxItems, batchSize,
                 WebEngine.getActiveContext().getCoreSession());
 
         res.message = "Room " + room.getName() + " created";
@@ -270,10 +278,92 @@ public class Api extends ModuleRoot {
     public Object doRender(@PathParam(value = "name") String name) throws Exception {
         RoomService rm = Framework.getService(RoomService.class);
         DocumentModel room = rm.getRoom(name, WebEngine.getActiveContext().getCoreSession());
-        return getView("index").arg("room", room).arg("session", WebEngine.getActiveContext().getCoreSession()).arg("t0", System.currentTimeMillis());
+        return getView("index").arg("room", room).arg("session", WebEngine.getActiveContext().getCoreSession()).arg(
+                "t0", System.currentTimeMillis());
     }
 
     public long getTimeDiff(long t0) {
-        return System.currentTimeMillis()-t0;
+        return System.currentTimeMillis() - t0;
+    }
+
+    @GET
+    @Path("update/{name}")
+    @Produces("text/plain")
+    public String updates(@PathParam(value = "name") String name, @QueryParam("nbThreads") Integer nbThreads,
+            @QueryParam("nbUpdates") Integer nbUpdates) throws Exception {
+        return doUpdates(name, nbThreads, nbUpdates);
+    }
+
+    @POST
+    @Path("update/{name}")
+    @Produces("text/plain")
+    public String doUpdates(@PathParam(value = "name") String name, @QueryParam("nbThreads") Integer nbThreads,
+            @QueryParam("nbUpdates") Integer nbUpdates) throws Exception {
+
+        if (nbUpdates == null) {
+            nbUpdates = 1000;
+        }
+        if (nbThreads == null) {
+            nbThreads = 5;
+        }
+
+        long t0 = System.currentTimeMillis();
+        RoomService rm = Framework.getService(RoomService.class);
+        rm.randomUpdates(name, WebEngine.getActiveContext().getCoreSession(), nbThreads, nbUpdates);
+        long t1 = System.currentTimeMillis();
+
+        double speed = (nbUpdates + 0.0) / ((t1 - t0) / 1000.0);
+
+        return "Updated " + nbUpdates + " docs on " + nbThreads + " threads in " + (t1 - t0) + "ms (" + speed
+                + " docs/s)";
+
+    }
+
+
+    @GET
+    @Path("readAndWrite/{name}")
+    @Produces("text/plain")
+    public String readAndWrite(@PathParam(value = "name") String name, @QueryParam("nbReads") Integer nbReads,
+            @QueryParam("nbUpdates") Integer nbUpdates, @QueryParam("batchSize") Integer batchSize) throws Exception {
+        return doReadAndWrite(name, nbReads, nbUpdates, batchSize);
+    }
+
+    protected void setListenersFlag(boolean enabled) {
+
+        EventServiceAdmin esa = Framework.getService(EventServiceAdmin.class);
+        esa.setBlockAsyncHandlers(!enabled);
+        esa.setBlockSyncPostCommitHandlers(!enabled);
+        EventListenerList lst = esa.getListenerList();
+        for (EventListenerDescriptor listener : lst.getInlineListenersDescriptors()) {
+            esa.setListenerEnabledFlag(listener.getName(), enabled);
+        }
+    }
+
+    @POST
+    @Path("readAndWrite/{name}")
+    @Produces("text/plain")
+    public String doReadAndWrite(@PathParam(value = "name") String name, @QueryParam("nbReads") Integer nbReads,
+            @QueryParam("nbUpdates") Integer nbUpdates, @QueryParam("batchSize") Integer batchSize) throws Exception {
+
+        if (nbUpdates == null) {
+            nbUpdates = 2;
+        }
+        if (nbReads == null) {
+            nbReads = 8;
+        }
+
+        if (batchSize==null) {
+            batchSize = 1000;
+        }
+
+
+        try {
+            setListenersFlag(false);
+            RoomService rm = Framework.getService(RoomService.class);
+            Map<String, Double> res = rm.randomReadAndUpdates(name, WebEngine.getActiveContext().getCoreSession(), nbReads, nbUpdates, batchSize);
+            return "Read: " + res.get("read") + "\nWrite:" + res.get("write");
+        } finally {
+            setListenersFlag(true);
+        }
     }
 }

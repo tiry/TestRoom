@@ -46,7 +46,7 @@ public class TestRestAPI extends BaseTest {
 
         RoomService rs = Framework.getService(RoomService.class);
         // first create a room using Java API
-        DocumentModel room = rs.createRoom("toto", 1, 100, session);
+        DocumentModel room = rs.createRoom("toto", 1, 100, 20, session);
         Assert.assertNotNull(room);
 
         // Simple REST API access
