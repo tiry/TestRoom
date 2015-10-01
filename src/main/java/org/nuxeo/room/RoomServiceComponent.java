@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.common.collections.ScopeType;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
@@ -271,6 +273,8 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
             if (rnd.nextInt(100) % 5 == 0) {
                 DocumentModel doc = session.getDocument(new IdRef(uuid));
                 doc.setPropertyValue("dc:description", "updated at " + System.currentTimeMillis());
+                doc.putContextData(ScopeType.DEFAULT, "disableAutoIndexing", true);
+                doc.putContextData(ScopeType.REQUEST, "disableAutoIndexing", true);
                 session.saveDocument(doc);
                 nbUpdates--;
             }
@@ -392,4 +396,78 @@ public class RoomServiceComponent extends DefaultComponent implements RoomServic
 
     }
 
+    protected long doHeavyReads(CoreSession session, int nbCycles) {
+
+        Long nbReads = 0L;
+
+        Random rnd = new Random(System.currentTimeMillis());
+
+        List<String> uuids = new ArrayList<String>();
+
+        for (int i = 0; i < nbCycles; i++) {
+            String query = "SELECT * FROM Document WHERE ecm:name like '";
+            query += "file-" + rnd.nextInt(10) + "-" + +rnd.nextInt(10) + "%";
+            query += "' AND ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0 AND ecm:isCheckedInVersion = 0 AND ecm:currentLifeCycleState != 'deleted'";
+            query += " order by dc:modified asc ";
+            DocumentModelList docs = session.query(query, 200);
+            if (docs.size() > 0) {
+                uuids.add(docs.get(0).getParentRef().toString());
+                nbReads+=docs.size();
+            }
+        }
+
+        for (String uuid : uuids) {
+            DocumentModelList docs = session.query("select * from Document where ecm:ancestorId ='" + uuid
+                    + "' order by dc:modified asc ", 1000);
+            nbReads+=docs.size();
+        }
+        return nbReads;
+    }
+
+
+    @Override
+    public Double heavyReads(CoreSession session, int nbThreads, int nbCycles) throws Exception {
+
+        long t0 = System.currentTimeMillis();
+        AtomicLong counter = new AtomicLong();
+
+        final String repoName = session.getRepositoryName();
+
+        List<Thread> workers = new ArrayList<Thread>();
+
+        for (int i = 0; i < nbThreads; i++) {
+            Thread t = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    new UnrestrictedSessionRunner(repoName) {
+                        @Override
+                        public void run() {
+                            TransactionHelper.startTransaction();
+                            counter.addAndGet(doHeavyReads(session, nbCycles));
+                            TransactionHelper.commitOrRollbackTransaction();
+                        }
+                    }.runUnrestricted();
+                }
+            });
+
+            t.start();
+            workers.add(t);
+        }
+
+        boolean completed = false;
+
+        while (!completed) {
+            completed = true;
+            for (Thread worker : workers) {
+                if (worker.isAlive()) {
+                    completed = false;
+                    break;
+                }
+            }
+            Thread.sleep(100);
+        }
+
+        return counter.get() / ((System.currentTimeMillis() -t0)/1000.0);
+    }
 }

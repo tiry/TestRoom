@@ -319,7 +319,6 @@ public class Api extends ModuleRoot {
 
     }
 
-
     @GET
     @Path("readAndWrite/{name}")
     @Produces("text/plain")
@@ -352,18 +351,41 @@ public class Api extends ModuleRoot {
             nbReads = 8;
         }
 
-        if (batchSize==null) {
+        if (batchSize == null) {
             batchSize = 1000;
         }
-
 
         try {
             setListenersFlag(false);
             RoomService rm = Framework.getService(RoomService.class);
-            Map<String, Double> res = rm.randomReadAndUpdates(name, WebEngine.getActiveContext().getCoreSession(), nbReads, nbUpdates, batchSize);
+            Map<String, Double> res = rm.randomReadAndUpdates(name, WebEngine.getActiveContext().getCoreSession(),
+                    nbReads, nbUpdates, batchSize);
             return "Read: " + res.get("read") + "\nWrite:" + res.get("write");
         } finally {
             setListenersFlag(true);
         }
     }
+
+    @GET
+    @Path("heavyRead")
+    @Produces("text/plain")
+    public String readAndWrite(@QueryParam("nbThreads") Integer nbThreads, @QueryParam("nbCycles") Integer nbCycles)
+            throws Exception {
+
+        if (nbThreads == null) {
+            nbThreads = 10;
+        }
+
+        if (nbCycles == null) {
+            nbCycles = 200;
+        }
+
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction(60*15);
+
+        RoomService rm = Framework.getService(RoomService.class);
+        return rm.heavyReads(WebEngine.getActiveContext().getCoreSession(), nbThreads, nbCycles) + "docs/s";
+
+    }
+
 }

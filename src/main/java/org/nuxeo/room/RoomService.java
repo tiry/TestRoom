@@ -28,4 +28,7 @@ public interface RoomService {
 
     Map<String, Double> randomReadAndUpdates(String name, CoreSession session, int nbReads, int nbUpdates, int batchSize)
             throws Exception;
+
+    Double heavyReads(CoreSession session, int nbThreads, int nbCycles) throws Exception;
+
 }
